@@ -14,7 +14,7 @@ class AlgorithimFactoryTest extends \PHPUnit_Framework_TestCase
      */
     public function shouldThrowExceptionIfAlgorithimNotAllowed()
     {
-        $algorithimFactory = new AlgorithimFactory(array());
+        $algorithimFactory = new AlgorithimFactory(array('algorithim' => '', 'secret' => '', 'privateKey' => '', 'publicKey' => ''));
         $algorithimFactory->make();
     }
 
@@ -24,7 +24,7 @@ class AlgorithimFactoryTest extends \PHPUnit_Framework_TestCase
      */
     public function shouldReturnSymmetricAlgorithim()
     {
-        $algorithimFactory = new AlgorithimFactory(array('algorithim' => 'HS256'));
+        $algorithimFactory = new AlgorithimFactory(array('algorithim' => 'HS256', 'secret' => '', 'privateKey' => '', 'publicKey' => ''));
         $algorithim = $algorithimFactory->make();
 
         $this->assertInstanceOf('Bendbennett\JWT\Algorithims\AlgorithimInterface', $algorithim);
@@ -39,7 +39,7 @@ class AlgorithimFactoryTest extends \PHPUnit_Framework_TestCase
     {
         PHPMockery::mock(__NAMESPACE__, "base_path")->andReturn('/some/directory/or/other');
 
-        $algorithimFactory = new AlgorithimFactory(array('algorithim' => 'ES256'));
+        $algorithimFactory = new AlgorithimFactory(array('algorithim' => 'ES256', 'secret' => '', 'privateKey' => '', 'publicKey' => ''));
         $algorithim = $algorithimFactory->make();
 
         $this->assertInstanceOf('Bendbennett\JWT\Algorithims\AlgorithimInterface', $algorithim);

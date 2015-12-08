@@ -1,9 +1,10 @@
 {
   "name": "bendbennett/JWT",
-  "description": ":package_description",
+  "description": ":JWT for Laravel middleware leveraging nashmi/jose and symmetric and asymmetric signing",
   "keywords": [
-    "league",
-    ":package_name"
+    "laravel",
+    "json web token",
+    "JWT"
   ],
   "homepage": "https://github.com/thephpbendbennett/JWT",
   "license": "MIT",

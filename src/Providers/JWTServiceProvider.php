@@ -30,8 +30,10 @@ class JWTServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        $path = realpath(__DIR__ . '/../config/config.php');
+
         $this->publishes([
-            __DIR__ . '/config/config.php' => config_path('jwtbdb.php')
+            $path => config_path('jwtbdb.php')
         ], 'config');
 
 

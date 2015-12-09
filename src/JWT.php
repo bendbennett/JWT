@@ -93,8 +93,7 @@ class JWT implements JWTInterface
         $hasScope = false;
 
         //need to trap for errors here;
-        $token = $this->getAuthorizationHeader($request);
-        $payload = $this->read($token);
+        $payload = $this->read($request);
 
         if (isset ($payload['scopes'])) {
             $payloadScopes = $payload['scopes'];

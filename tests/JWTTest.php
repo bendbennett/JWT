@@ -46,7 +46,10 @@ class JWTTest extends PHPUnit_Framework_TestCase
         $jwt->create(array());
     }
 
-    /** @test */
+    /**
+     * @test
+     * @group jwt
+     */
     public function readShouldCallRelevantMethods()
     {
         $this->jwsProxy->shouldReceive('callLoad')->once()->andReturn($this->jwsProxy);
@@ -57,8 +60,10 @@ class JWTTest extends PHPUnit_Framework_TestCase
 
         $this->algoFactory->shouldReceive('make')->once()->andReturn($this->algo);
 
+        $this->request->shouldReceive('header')->with('Authorization')->andReturn('Bearer abcd1234');
+
         $jwt = new JWT($this->jwsProxy, $this->algoFactory, $this->payload);
-        $jwt->read('token');
+        $jwt->read($this->request);
     }
 
     /**

@@ -62,8 +62,10 @@ class JWT implements JWTInterface
      * @param $token
      * @return array
      */
-    public function read($token)
+    public function read($request)
     {
+        $token = $this->getAuthorizationHeader($request);
+
         $this->jws = $this->jws->callLoad($token);
         $algo = $this->algoFactory->make();
 

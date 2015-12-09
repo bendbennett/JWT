@@ -6,11 +6,34 @@ use Namshi\JOSE\JWS;
 
 class JWTTest extends PHPUnit_Framework_TestCase
 {
+    /**
+     * @var \Mockery\MockInterface|\Bendbennett\JWT\JWSProxy
+     */
     protected $jwsProxy;
+
+    /**
+     * @var \Mockery\MockInterface
+     */
     protected $algo;
+
+    /**
+     * @var \Mockery\MockInterface|Bendbennett\JWT\Factory
+     */
     protected $algoFactory;
+
+    /**
+     * @var \Mockery\MockInterface|Bendbennett\JWT\Payload
+     */
     protected $payload;
+
+    /**
+     * @var \Mockery\MockInterface|Bendbennett\JWT\JWT
+     */
     protected $jwtPartialMock;
+
+    /**
+     * @var \Mockery\MockInterface
+     */
     protected $request;
 
     public function setUp()
@@ -28,7 +51,10 @@ class JWTTest extends PHPUnit_Framework_TestCase
         Mockery::close();
     }
 
-    /** @test */
+    /**
+     * @test
+     * @group jwt
+     */
     public function createShouldCallRelevantMethods()
     {
         $this->jwsProxy->shouldReceive('setPayload')->once();
@@ -148,6 +174,18 @@ class JWTTest extends PHPUnit_Framework_TestCase
         $this->jwtPartialMock->shouldReceive('read')->once()->andReturn(array('scopes' => array('hr' => array('admin'))));
 
         $this->assertTrue($this->jwtPartialMock->hasScope(array('something.else.entirely', 'hr.admin'), $this->request));
+    }
+
+    /**
+     * @test
+     * @group jwt
+     */
+    public function hasScopeShouldReturnTrueWhenTokenContainsMatchingEntryWithArbitraryNesting()
+    {
+        $this->request->shouldReceive('header')->with('Authorization')->andReturn('Bearer abcd1234');
+        $this->jwtPartialMock->shouldReceive('read')->once()->andReturn(array('scopes' => array('api' => array('role' => array('actions' => array('read'))))));
+
+        $this->assertTrue($this->jwtPartialMock->hasScope(array('something.else.entirely', 'api.role.actions.read'), $this->request));
     }
 }
 

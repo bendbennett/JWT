@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Bendbennett\JWT;
 
 use Bendbennett\JWT\Algorithims\AlgoritihimFactory;
@@ -11,18 +10,20 @@ use Bendbennett\JWT\Algorithims\AlgoritihimFactory;
  */
 class JWT implements JWTInterface
 {
-
     /**
      * @var JWSProxy
      */
     protected $jws;
+
     /**
      * @var Factory
      */
     protected $algoFactory;
 
+    /**
+     * @var Payload
+     */
     protected $payload;
-
 
     /**
      * Using a wrapper to proxy Namshi\JOSE\JWS so can unit test the JWT::read() method
@@ -59,8 +60,9 @@ class JWT implements JWTInterface
     }
 
     /**
-     * @param $token
+     * @param $request
      * @return array
+     * @throws \Exception
      */
     public function read($request)
     {
@@ -74,21 +76,51 @@ class JWT implements JWTInterface
         }
     }
 
+    /**
+     * @param $request
+     * @return mixed
+     * @throws \Exception
+     */
+    private function getAuthorizationHeader($request)
+    {
+        if (is_null($authorizationHeader = $request->header('Authorization'))) {
+            throw new \Exception('Authorization header is either missing or empty');
+        }
+
+        if (strpos($authorizationHeader, 'Bearer ') === false) {
+            throw new \Exception('Authorization header is malformed and does not contain "Bearer"');
+        }
+
+        return str_replace('Bearer ', '', $authorizationHeader);
+    }
 
     /**
      * Scopes take form of nested JSON @link https://auth0.com/blog/2014/12/02/using-json-web-tokens-as-api-keys/
+     * i.e., scopes: { api: { role: [action1, action2] } }
+     * e.g., scopes: { hr: { user: ['read', 'create'] } }
      *
-     * scopes: { api: { role: { actions: [] } } }
-     * for example: scopes: { hr: { user: { actions: ['read', 'create'] }, admin } }
+     * Roles without specified actions are also allowed
+     * i.e., scopes: { api: { role1: [action1, action2], role2 } }
+     * e.g., scopes: { api: { user: [read, create], admin } }
      *
-     * $scope takes form of dot separated string used in routes e.g., hr.user.create
+     * Scopes take form of dot separated string when used in routes (e.g., hr.user.create)
+     *
+     * In order for a user to be allowed to access a specific route there must be an exact match between the scopes in the JWT
+     * and the required scope(s) defined on the route
+     * for example
+     * Route::get('/', 'DefaultController@index')->middleware(['middleware' => 'verifyClaim:hr.user.read']);
+     * requires payload to contain
+     * scopes: { hr: { user: [read] } }
+     *
+     * $requiredScopes is an array of scopes defined on the route(s) (e.g., hr.user.read,hr.admin)
+     * $request should contain Authorization header containing JWT
      *
      * @param $requiredScopes
-     * @param $authorizationHeader
+     * @param $request
      * @return bool
      * @throws \Exception
      */
-    public function hasScope($requiredScopes, $request)
+    public function hasScope(array $requiredScopes, $request)
     {
         $hasScope = false;
 
@@ -112,19 +144,19 @@ class JWT implements JWTInterface
         return $hasScope;
     }
 
-    private function getAuthorizationHeader($request)
-    {
-        if (is_null($authorizationHeader = $request->header('Authorization'))) {
-            throw new \Exception('Authorization header is either missing or empty');
-        }
-
-        if (strpos($authorizationHeader, 'Bearer ') === false) {
-            throw new \Exception('Authorization header is malformed and does not contain "Bearer"');
-        }
-
-        return str_replace('Bearer ', '', $authorizationHeader);
-    }
-
+    /**
+     * checkScope() is called recursively to determine whether there is scope within the JWT payload that matches
+     * a scope defined on the route
+     *
+     * There is also a check to determine whether the scope contained within the payload match the route scope
+     * in cases where the payload scope has additional properties
+     * e.g., route scope == hr.user, payload scope == scopes: { hr : { user: [read] } } will return true because the JWT
+     * contains an hr.user scope albeit with additional actions
+     *
+     * @param $explodedScope
+     * @param $payloadScopes
+     * @return bool
+     */
     private function checkScope($explodedScope, $payloadScopes)
     {
         $explodedScopeCount = count($explodedScope);
@@ -138,7 +170,7 @@ class JWT implements JWTInterface
                 $payloadScopes = $payloadScopes[$explodedScope[$i]];
                 $explodedScope = array_splice($explodedScope, 1);
                 return $this->checkScope($explodedScope, $payloadScopes);
-            } elseif (in_array($explodedScope[$i], $payloadScopes) && $i == $explodedScopeCount -1) {
+            } elseif (in_array($explodedScope[$i], $payloadScopes) && $i == $explodedScopeCount - 1) {
                 return true;
             } else {
                 return false;

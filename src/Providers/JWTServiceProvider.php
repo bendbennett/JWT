@@ -109,7 +109,7 @@ class JWTServiceProvider extends ServiceProvider
     private function registerJWT()
     {
         $this->app['bendbennett.jwt'] = $this->app->share(function ($app) {
-            return new JWT($app['bendbennett.jwsproxy'], $app['bendbennett.jwtalgofactory'], $app['bendbennett.payload']);
+            return new JWT($app['bendbennett.jwsproxy'], $app['bendbennett.jwtalgofactory'], $app['bendbennett.payload'], config('jwtbdb.algorithim'));
         });
     }
 

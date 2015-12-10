@@ -26,18 +26,25 @@ class JWT implements JWTInterface
     protected $payload;
 
     /**
+     * @var string
+     */
+    protected $algoritihim;
+
+    /**
      * Using a wrapper to proxy Namshi\JOSE\JWS so can unit test the JWT::read() method
      * as this contains a call to the static JWS::load() method
      *
      * @param JWSProxy $jws
      * @param Factory $algoFactory
      * @param Payload $payload
+     * @param String $algorithim
      */
-    public function __construct(JWSProxy $jws, Factory $algoFactory, Payload $payload)
+    public function __construct(JWSProxy $jws, Factory $algoFactory, Payload $payload, $algorithim)
     {
         $this->jws = $jws;
         $this->algoFactory = $algoFactory;
         $this->payload = $payload;
+        $this->algoritihim = $algorithim;
     }
 
     /**
@@ -71,9 +78,11 @@ class JWT implements JWTInterface
         $this->jws = $this->jws->callLoad($token);
         $algo = $this->algoFactory->make();
 
-        if ($this->jws->verify($algo->getKeyForVerifying())) {
-            return $this->jws->getPayload();
+        if (!$this->jws->verify($algo->getKeyForVerifying(), $this->algoritihim)) {
+            throw new \Exception('JWT algoritihim used for signing does not match algoritihim used for verifying');
         }
+
+        return $this->jws->getPayload();
     }
 
     /**

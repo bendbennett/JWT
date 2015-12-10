@@ -51,7 +51,7 @@ class JWTTest extends PHPUnit_Framework_TestCase
 
     /**
      * @test
-     * @group jwt
+     * @group jwt...
      */
     public function createShouldCallRelevantMethods()
     {
@@ -78,9 +78,10 @@ class JWTTest extends PHPUnit_Framework_TestCase
     {
         $this->jwsProxy->shouldReceive('callLoad')->once()->andReturn($this->jwsProxy);
         $this->jwsProxy->shouldReceive('verify')->once()->andReturn(true);
+        $this->jwsProxy->shouldReceive('isExpired')->once()->andReturn(false);
         $this->jwsProxy->shouldReceive('getPayload')->once()->andReturn(true);
 
-        $this->algo->shouldReceive('getKeyForVerifying')->once()->andReturn(true);
+        $this->algo->shouldReceive('getKeyForVerifying')->twice()->andReturn(true);
 
         $this->algoFactory->shouldReceive('make')->once()->andReturn($this->algo);
 
@@ -185,5 +186,43 @@ class JWTTest extends PHPUnit_Framework_TestCase
 
         $this->assertTrue($this->jwtPartialMock->hasScope(array('something.else.entirely', 'api.role.actions.read'), $this->request));
     }
+
+    /**
+     * @test
+     * @group jwtnew
+     * @expectedException \Exception
+     */
+    public function readShouldThrowExceptionWhenVerificationOfJWTReturnsFalse()
+    {
+        $this->request->shouldReceive('header')->once()->with('Authorization')->andReturn('Bearer abcd1234');
+        $this->jwsProxy->shouldReceive('callLoad')->once()->andReturn($this->jwsProxy);
+        $algo = Mockery::mock('Bendbennett\JWT\Algorithims\AsymmetricAlgorithim');
+        $algo->shouldReceive('getKeyForVerifying')->once();
+        $this->algoFactory->shouldReceive('make')->once()->andReturn($algo);
+        $this->jwsProxy->shouldReceive('verify')->once()->andReturn(false);
+
+        $jwt = new JWT($this->jwsProxy, $this->algoFactory, $this->payload, 'algoDefinedInConfig');
+        $jwt->read($this->request);
+    }
+
+    /**
+     * @test
+     * @group jwtnew
+     * @expectedException \Exception
+     */
+    public function readShouldThrowExceptionWhenValidationOfJWTReturnsFalse()
+    {
+        $this->request->shouldReceive('header')->once()->with('Authorization')->andReturn('Bearer abcd1234');
+        $this->jwsProxy->shouldReceive('callLoad')->once()->andReturn($this->jwsProxy);
+        $algo = Mockery::mock('Bendbennett\JWT\Algorithims\AsymmetricAlgorithim');
+        $algo->shouldReceive('getKeyForVerifying')->twice();
+        $this->algoFactory->shouldReceive('make')->once()->andReturn($algo);
+        $this->jwsProxy->shouldReceive('verify')->once()->andReturn(true);
+        $this->jwsProxy->shouldReceive('isExpired')->once()->andReturn('false');
+
+        $jwt = new JWT($this->jwsProxy, $this->algoFactory, $this->payload, 'algoDefinedInConfig');
+        $jwt->read($this->request);
+    }
+
 }
 

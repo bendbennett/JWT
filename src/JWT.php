@@ -82,6 +82,10 @@ class JWT implements JWTInterface
             throw new \Exception('JWT algoritihim used for signing does not match algoritihim used for verifying');
         }
 
+        if ($this->jws->isExpired($algo->getKeyForVerifying(), $this->algoritihim)) {
+            throw new \Exception('JWT has expired');
+        }
+
         return $this->jws->getPayload();
     }
 

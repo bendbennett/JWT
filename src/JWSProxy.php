@@ -2,10 +2,9 @@
 
 namespace Bendbennett\JWT;
 
+use Namshi\JOSE\SimpleJWS;
 
-use Namshi\JOSE\JWS;
-
-class JWSProxy extends JWS
+class JWSProxy extends SimpleJWS
 {
     /**
      * Proxy JWS::load static method to allow unit testing.

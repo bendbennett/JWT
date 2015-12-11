@@ -1,17 +1,17 @@
 <?php
 
-use Bendbennett\JWT\Algorithims\SymmetricAlgorithim;
+use Bendbennett\JWT\Algorithms\SymmetricAlgorithm;
 
-class SymmetricAlgoTest extends PHPUnit_Framework_TestCase
+class SymmetricAlgorithmTest extends PHPUnit_Framework_TestCase
 {
 
-    /** @var Bendbennett\JWT\Algorithims\SymmetricAlgorithim */
+    /** @var Bendbennett\JWT\Algorithms\SymmetricAlgorithm */
     public $symAlgo;
 
 
     public function setUp()
     {
-        $this->symAlgo = new SymmetricAlgorithim('secret');
+        $this->symAlgo = new SymmetricAlgorithm('secret');
     }
 
 

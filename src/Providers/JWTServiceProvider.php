@@ -2,11 +2,12 @@
 
 namespace Bendbennett\JWT\Providers;
 
+use Bendbennett\JWT\Jti;
 use Bendbennett\JWT\JWSProxy;
 use Bendbennett\JWT\JWT;
 use Bendbennett\JWT\Payload;
 
-use Bendbennett\JWT\Algorithims\AlgorithimFactory;
+use Bendbennett\JWT\Algorithms\AlgorithmFactory;
 use Bendbennett\JWT\Utilities\PayloadUtilities;
 use Bendbennett\JWT\Validators\PayloadValidator;
 
@@ -30,11 +31,13 @@ class JWTServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        $path = realpath(__DIR__ . '/../config/config.php');
+        $this->publishes([
+            __DIR__ . '/../config/config.php' => config_path('jwtbdb.php')
+        ], 'config');
 
         $this->publishes([
-            $path => config_path('jwtbdb.php')
-        ], 'config');
+            __DIR__ . '/../database/migrations/' => database_path('migrations')
+        ], 'migrations');
 
 
         $this->app['Bendbennett\JWT\JWT'] = function ($app) {
@@ -109,7 +112,7 @@ class JWTServiceProvider extends ServiceProvider
     private function registerJWT()
     {
         $this->app['bendbennett.jwt'] = $this->app->share(function ($app) {
-            return new JWT($app['bendbennett.jwsproxy'], $app['bendbennett.jwtalgofactory'], $app['bendbennett.payload'], config('jwtbdb.algorithim'));
+            return new JWT($app['bendbennett.jwsproxy'], $app['bendbennett.jwtalgofactory'], $app['bendbennett.payload'], config('jwtbdb.algorithm'), new Jti());
         });
     }
 
@@ -118,7 +121,7 @@ class JWTServiceProvider extends ServiceProvider
         $this->app['bendbennett.jwsproxy'] = $this->app->share(function ($app) {
             return new JWSProxy([
                 'typ' => 'JWT',
-                'alg' => config('jwtbdb.algorithim'),
+                'alg' => config('jwtbdb.algorithm'),
             ]);
         });
     }
@@ -126,8 +129,8 @@ class JWTServiceProvider extends ServiceProvider
     private function registerJWTAlgoFactory()
     {
         $this->app['bendbennett.jwtalgofactory'] = $this->app->share(function ($app) {
-            return new AlgorithimFactory(array(
-                'algorithim' => config('jwtbdb.algorithim'),
+            return new AlgorithmFactory(array(
+                'algorithm' => config('jwtbdb.algorithm'),
                 'secret' => config('jwtbdb.secret'),
                 'privateKey' => config('jwtbdb.privateKey'),
                 'publicKey' => config('jwtbdb.publicKey'),

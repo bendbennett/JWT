@@ -64,9 +64,9 @@ $ php artisan vendor:publish
 
 ### Edit the `config/jwtbdb` file
 
-#### algorithim
+#### algorithm
 
-Possible choices are `ES256|ES384|ES512|RS256|RS384|RS512` for asymmetric algorithims or `HS256|HS384|HS512` for symmetric algorithims.
+Possible choices are `ES256|ES384|ES512|RS256|RS384|RS512` for asymmetric algorithms or `HS256|HS384|HS512` for symmetric algorithms.
 
 #### ttl
 
@@ -88,7 +88,7 @@ It is expected that `sub` will be supplied during the generation of the payload 
 
 #### secret
 
-This should be set to a random string if a symmetric algorithim is going to be used
+This should be set to a random string if a symmetric algorithm is going to be used
 
 #### privateKey and publicKey
 
@@ -97,9 +97,9 @@ These should either:
 * provide an absolute location of public and private keys within the file system
 * contain the actual text of the key 
 
-### Creation of public and private keys for use with asymmetric algorithims
+### Creation of public and private keys for use with asymmetric algorithms
 
-If `ES256`, `ES384` or `ES512` algorithims are to be used then the private and public keys can be generated as follows:
+If `ES256`, `ES384` or `ES512` algorithms are to be used then the private and public keys can be generated as follows:
 
 #### ES256
 ``` bash
@@ -153,7 +153,7 @@ The JWT can then be used for all subsequent API calls and the scopes within the 
 
 In this case, if the JWT contains "scopes" within the payload which match either or both of the scopes defined on the route then the user will be able to access that route.
 
-When using asymmetric algorithims the API that receives the JWT as part of the request only needs the public key to verify the signature.
+When using asymmetric algorithms the API that receives the JWT as part of the request only needs the public key to verify the signature.
 
 ## Testing
 

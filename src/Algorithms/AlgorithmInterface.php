@@ -1,13 +1,13 @@
 <?php
 
-namespace Bendbennett\JWT\Algorithims;
+namespace Bendbennett\JWT\Algorithms;
 
 
 /**
  * Interface AlgoInterface
  * @package Bendbennett\JWT\Providers
  */
-interface AlgorithimInterface
+interface AlgorithmInterface
 {
     /**
      * @return mixed

@@ -1,11 +1,14 @@
 <?php
 
 use Bendbennett\JWT\JWT;
+use Bendbennett\JWT\Jti;
+
+use Mockery\Mock;
 
 class JWTTest extends PHPUnit_Framework_TestCase
 {
     /**
-     * @var \Mockery\MockInterface|Bendbennett\JWT\JWSProxy
+     * @var \Bendbennett\JWT\JWSProxy|\Mockery\MockInterface $jwsProxy
      */
     protected $jwsProxy;
 
@@ -15,19 +18,24 @@ class JWTTest extends PHPUnit_Framework_TestCase
     protected $algo;
 
     /**
-     * @var \Mockery\MockInterface|Bendbennett\JWT\Factory
+     * @var Bendbennett\JWT\Algorithms\AlgorithmFactory|\Mockery\MockInterface $algoFactory
      */
     protected $algoFactory;
 
     /**
-     * @var \Mockery\MockInterface|Bendbennett\JWT\Payload
+     * @var \Mockery\MockInterface
      */
     protected $payload;
 
     /**
-     * @var \Mockery\MockInterface|Bendbennett\JWT\JWT
+     * @var \Mockery\MockInterface
      */
     protected $jwtPartialMock;
+
+    /**
+     * @var \Mockery\MockInterface
+     */
+    protected $jti;
 
     /**
      * @var \Mockery\MockInterface
@@ -37,10 +45,11 @@ class JWTTest extends PHPUnit_Framework_TestCase
     public function setUp()
     {
         $this->jwsProxy = Mockery::mock('Bendbennett\JWT\JWSProxy');
-        $this->algo = Mockery::mock('Bendbennett\JWT\Algorithims\AsymmetricAlgorithim');
-        $this->algoFactory = Mockery::mock('Bendbennett\JWT\Algorithims\AlgorithimFactory');
+        $this->algo = Mockery::mock('Bendbennett\JWT\Algorithms\AsymmetricAlgorithm');
+        $this->algoFactory = Mockery::mock('Bendbennett\JWT\Algorithms\AlgorithmFactory');
         $this->payload = Mockery::mock('Bendbennett\JWT\Payload');
-        $this->jwtPartialMock = Mockery::mock('Bendbennett\JWT\JWT[read, getAuthorizationHeader]', array($this->jwsProxy, $this->algoFactory, $this->payload, 'algoDefinedInConfig'));
+        $this->jti = Mockery::mock('Bendbennett\JWT\Jti');
+        $this->jwtPartialMock = Mockery::mock('Bendbennett\JWT\JWT[read, getAuthorizationHeader]', array($this->jwsProxy, $this->algoFactory, $this->payload, 'algoDefinedInConfig', $this->jti));
         $this->request = Mockery::mock('\Illuminate\Http\Request');
     }
 
@@ -51,7 +60,7 @@ class JWTTest extends PHPUnit_Framework_TestCase
 
     /**
      * @test
-     * @group jwt...
+     * @group jwt
      */
     public function createShouldCallRelevantMethods()
     {
@@ -65,8 +74,11 @@ class JWTTest extends PHPUnit_Framework_TestCase
 
         $this->payload->shouldReceive('setClaims')->once();
         $this->payload->shouldReceive('getPayload')->once()->andReturn(array());
+        $this->payload->shouldReceive('getClaim')->twice();
 
-        $jwt = new JWT($this->jwsProxy, $this->algoFactory, $this->payload, 'algoDefinedInConfig');
+        $this->jti->shouldReceive('create')->once();
+
+        $jwt = new JWT($this->jwsProxy, $this->algoFactory, $this->payload, 'algoDefinedInConfig', $this->jti);
         $jwt->create(array());
     }
 
@@ -87,7 +99,7 @@ class JWTTest extends PHPUnit_Framework_TestCase
 
         $this->request->shouldReceive('header')->with('Authorization')->andReturn('Bearer abcd1234');
 
-        $jwt = new JWT($this->jwsProxy, $this->algoFactory, $this->payload, 'algoDefinedInConfig');
+        $jwt = new JWT($this->jwsProxy, $this->algoFactory, $this->payload, 'algoDefinedInConfig', $this->jti);
         $jwt->read($this->request);
     }
 
@@ -196,12 +208,12 @@ class JWTTest extends PHPUnit_Framework_TestCase
     {
         $this->request->shouldReceive('header')->once()->with('Authorization')->andReturn('Bearer abcd1234');
         $this->jwsProxy->shouldReceive('callLoad')->once()->andReturn($this->jwsProxy);
-        $algo = Mockery::mock('Bendbennett\JWT\Algorithims\AsymmetricAlgorithim');
+        $algo = Mockery::mock('Bendbennett\JWT\Algorithms\AsymmetricAlgorithm');
         $algo->shouldReceive('getKeyForVerifying')->once();
         $this->algoFactory->shouldReceive('make')->once()->andReturn($algo);
         $this->jwsProxy->shouldReceive('verify')->once()->andReturn(false);
 
-        $jwt = new JWT($this->jwsProxy, $this->algoFactory, $this->payload, 'algoDefinedInConfig');
+        $jwt = new JWT($this->jwsProxy, $this->algoFactory, $this->payload, 'algoDefinedInConfig', $this->jti);
         $jwt->read($this->request);
     }
 
@@ -214,13 +226,13 @@ class JWTTest extends PHPUnit_Framework_TestCase
     {
         $this->request->shouldReceive('header')->once()->with('Authorization')->andReturn('Bearer abcd1234');
         $this->jwsProxy->shouldReceive('callLoad')->once()->andReturn($this->jwsProxy);
-        $algo = Mockery::mock('Bendbennett\JWT\Algorithims\AsymmetricAlgorithim');
+        $algo = Mockery::mock('Bendbennett\JWT\Algorithms\AsymmetricAlgorithm');
         $algo->shouldReceive('getKeyForVerifying')->twice();
         $this->algoFactory->shouldReceive('make')->once()->andReturn($algo);
         $this->jwsProxy->shouldReceive('verify')->once()->andReturn(true);
         $this->jwsProxy->shouldReceive('isExpired')->once()->andReturn('false');
 
-        $jwt = new JWT($this->jwsProxy, $this->algoFactory, $this->payload, 'algoDefinedInConfig');
+        $jwt = new JWT($this->jwsProxy, $this->algoFactory, $this->payload, 'algoDefinedInConfig', $this->jti);
         $jwt->read($this->request);
     }
 

@@ -2,7 +2,9 @@
 
 namespace Bendbennett\JWT;
 
-use Bendbennett\JWT\Algorithims\AlgoritihimFactory;
+use Bendbennett\JWT\Jti;
+use Bendbennett\JWT\Algorithms\AlgoritihimFactory;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * Class JWT
@@ -31,20 +33,25 @@ class JWT implements JWTInterface
     protected $algoritihim;
 
     /**
+     * @var Model
+     */
+
+    /**
      * Using a wrapper to proxy Namshi\JOSE\JWS so can unit test the JWT::read() method
      * as this contains a call to the static JWS::load() method
      *
      * @param JWSProxy $jws
      * @param Factory $algoFactory
      * @param Payload $payload
-     * @param String $algorithim
+     * @param String $algorithm
      */
-    public function __construct(JWSProxy $jws, Factory $algoFactory, Payload $payload, $algorithim)
+    public function __construct(JWSProxy $jws, Factory $algoFactory, Payload $payload, $algorithm, Model $jti)
     {
         $this->jws = $jws;
         $this->algoFactory = $algoFactory;
         $this->payload = $payload;
-        $this->algoritihim = $algorithim;
+        $this->algoritihim = $algorithm;
+        $this->jti = $jti;
     }
 
     /**
@@ -62,6 +69,8 @@ class JWT implements JWTInterface
 
         $algo = $this->algoFactory->make();
         $this->jws->sign($algo->getKeyForSigning());
+
+        $this->jti->create(['jti' => $this->payload->getClaim('jti'), 'exp' => $this->payload->getClaim('exp')]);
 
         return $this->jws->getTokenString();
     }

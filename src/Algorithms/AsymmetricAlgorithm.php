@@ -1,6 +1,6 @@
 <?php
 
-namespace Bendbennett\JWT\Algorithims;
+namespace Bendbennett\JWT\Algorithms;
 
     //looks for file in directory in the root of the laravel directory i.e., 1 level up from /app using relative path
     //tries to load from anywhere within the file system using absolute path
@@ -11,7 +11,7 @@ namespace Bendbennett\JWT\Algorithims;
  * Class AsymmetricAlgo
  * @package Bendbennett\JWT\Providers
  */
-class AsymmetricAlgorithim implements AlgorithimInterface
+class AsymmetricAlgorithm implements AlgorithmInterface
 {
     protected $privateKey;
     protected $publicKey;

@@ -1,8 +1,8 @@
 <?php
 
-namespace Bendbennett\JWT\Algorithims;
+namespace Bendbennett\JWT\Algorithms;
 
-class SymmetricAlgorithim implements AlgorithimInterface
+class SymmetricAlgorithm implements AlgorithmInterface
 {
     protected $secret;
 

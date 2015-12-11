@@ -4,7 +4,7 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | JWT Algorithim
+    | JWT Algorithm
     |--------------------------------------------------------------------------
     |
     | This is the algorithm used to sign JWT.
@@ -14,7 +14,7 @@ return [
     |
     */
 
-    'algorithim' => 'ES256',
+    'algorithm' => 'ES256',
 
     'privateKey' => '',
 
